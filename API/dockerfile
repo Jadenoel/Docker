@@ -1,0 +1,32 @@
+# Specify the base image. Here, we're using Node.js 12.
+FROM node:16-alpine
+
+# Set the working directory inside the container to /app.
+WORKDIR /app
+
+RUN apk add --no-cache git
+
+# Copy the package.json and package-lock.json (if available).
+COPY package*.json ./
+
+# Install the dependencies specified in package.json.
+# If you have native dependencies, use `npm install` instead of `npm ci`.
+RUN npm install cors express web3 @truffle/hdwallet-provider
+
+# Copy the rest of your app's source code from your host to your image filesystem.
+COPY ./api.js .
+
+RUN mkdir -p ./IBFT-Network/build/contracts
+
+# Make sure to copy the ABIs and any other files your app needs to run.
+# This assumes your Docker build context is set to the project root.
+# Adjust the paths according to your project structure.
+COPY ./CommunityProperties.json ./IBFT-Network/build/contracts
+COPY ./Marketplace.json ./IBFT-Network/build/contracts
+COPY ./QualityLabel.json ./IBFT-Network/build/contracts
+
+# Expose the port your app runs on.
+EXPOSE 20100
+
+# Command to run your app using Node.js
+CMD ["node", "api.js"]
